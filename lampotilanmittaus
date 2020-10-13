@@ -1,0 +1,20 @@
+//Ensimmainen versio, koodi tutorial-tiedostosta. Toimii jotenkin, mutta laskee lämpötilan väärin
+void setup(){
+  Serial. begin(9600);
+  Serial.println("UNO is ready!");
+}
+
+void loop(){
+  int adcVal = analogRead(A0);
+  float v = adcVal*5.0/1024;
+  float Rt = 10*v/(5-v);
+  float tempK = 1/(log(Rt)/3950+1/(273.15+25));
+  float tempC = tempK-273.15;
+
+  Serial.print("Current temperature is: ");
+  Serial.print(tempK);
+  Serial.print(" K, ");
+  Serial.print(tempC);
+  Serial.print(" C");
+  delay(5000);
+}
