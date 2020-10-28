@@ -5,8 +5,11 @@ void setup(){
 }
 
 void loop(){
+  // Convert analog value of A0 port into digital value
   int adcVal = analogRead(A0);
+  // Calculate voltage
   float v = adcVal*5.0/1024;
+  // Calculate voltage
   float Rt = 10*v/(5-v);
   float tempK = 1/(log(Rt)/3950+1/(273.15+25));
   float tempC = tempK-273.15;
