@@ -1,0 +1,18 @@
+void setup(){
+  Serial. begin(9600);
+  Serial.println("UNO is ready!");
+}
+
+void loop(){
+  // Convert analog value of A0 port into digital value
+  int sensorInput = analogRead(A0);
+  double temp = (double)sensorInput/1024;
+  temp = temp * 5;
+  temp = temp - 0,5;
+  temp = temp * 100;
+
+  Serial.print("Current temperature:" );
+  Serial.print(temp);
+  delay(5000);
+  
+}
