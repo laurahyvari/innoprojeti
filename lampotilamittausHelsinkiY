@@ -1,0 +1,66 @@
+//lämpömittari
+// ledien ohjauspinnit
+#define PUN 5
+#define KEL 4
+#define VIH 3
+//lämpötilarajat
+#define KYLMA 22
+#define HAALEA 26
+#define KUUMA 30
+//lämpötila-anturia lukeva pinni
+#define T_ANTURI 0
+//viive millisekunteina
+#define VIIVE 200
+//määritellään muuttujia
+int n; //anturilta luettu data, 0 - 1023
+float U; //datasta laskettu jännite, 0 - 5 V
+float t; //jännitteestä laskettu lämpötila
+//määritellään funktio joka laskee anturidatasta jännitteen
+float jannite(int data) {
+ return (data/1023.0)*5.0;
+}
+//määritellään funktio joka laskee jännitteestä lämpötilan
+float lampotila(float jannite) {
+ return (jannite - 0.5)*100;
+}
+void setup() {
+ // alustetaan ledien ohjauspinnit lähdöiksi
+ pinMode(PUN, OUTPUT);
+ pinMode(KEL, OUTPUT);
+ pinMode(VIH, OUTPUT);
+ //avataan sarjaliikenneportti
+ Serial.begin(9600);
+}
+void loop() {
+ n = analogRead(T_ANTURI); //luetaan anturidata
+ U = jannite(n); //lasketaan siitä jännite
+ t = lampotila(U); //ja jännitteestä lämpötila
+ Serial.print("data: "); //tulostetaan sarjaporttiin:
+ Serial.print(n); //data,
+ Serial.print(" jannite : ");
+ Serial.print(U); //jännite
+ Serial.print(" V lampotila: ");
+ Serial.print(t); //ja lämpötila,
+ Serial.println(" C"); //loppuun rivinvaihto
+ if (t < KYLMA) { //sytytetään ledejä sen mukaan
+ digitalWrite(PUN, LOW); //millä alueella lämpötila on
+ digitalWrite(KEL, LOW);
+ digitalWrite(VIH, LOW);
+ }
+ else if (t < HAALEA) {
+ digitalWrite(PUN, LOW);
+ digitalWrite(KEL, LOW);
+ digitalWrite(VIH, HIGH);
+ }
+ else if (t < KUUMA) {
+ digitalWrite(PUN, LOW);
+ digitalWrite(KEL, HIGH);
+ digitalWrite(VIH, LOW);
+ }
+ else {
+ digitalWrite(PUN, HIGH);
+ digitalWrite(KEL, LOW);
+ digitalWrite(VIH, LOW);
+ }
+ delay(VIIVE); //hidastetaan silmukkaa,
+} 
