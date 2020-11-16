@@ -1,4 +1,4 @@
-# innoprojetin ryhmätyö
+# innoprojektin ryhmätyö
 Osallistujat:
 Anne-Mari Mannila
 Laura Hyvärinen
