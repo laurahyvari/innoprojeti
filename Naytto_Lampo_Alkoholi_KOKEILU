@@ -1,10 +1,12 @@
+//Toimiva lämpötilan, alkoholin ja näytön yhdistelmä
+
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 
-const int AOUTpin=A0;//the AOUT pin of the alcohol sensor goes into analog pin A0 of the arduino
+const int AOUTpin=A1;//the AOUT pin of the alcohol sensor goes into analog pin A0 of the arduino
 const int ledPin=13;//the anode of the LED connects to digital pin D13 of the arduino
 
 int i,alco_high,alco_low,mapped,data[200];
@@ -49,10 +51,11 @@ data[0]= analogRead(AOUTpin);//reads the analaog value from the alcohol sensor's
 mapped=map(data[0],0,1023,-13,100);
 lcd.clear();
 lcd.print("Alco: ");
-Serial.print("Alcohol value: ");
+Serial.println("Alcohol value: ");
 lcd.print(mapped);//prints the alcohol value
+lcd.setCursor(0,1);
 Serial.println(mapped);
-delay(2000);
+//delay(2000);
 
 // lisätään lämpö
 
@@ -67,9 +70,12 @@ delay(2000);
   
  //  lcd.setCursor(1, 0); TARVITAANKO
 
-  lcd.print("Temperature: ");
+  lcd.print("T: ");
+  Serial.print("Temperature: ");
   lcd.print(T);
-  lcd.print("C");  
+  Serial.print(T);
+  lcd.print("C");
+  
   delay(2000);
 
     }
