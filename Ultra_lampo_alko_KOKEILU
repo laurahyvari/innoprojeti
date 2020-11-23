@@ -1,0 +1,108 @@
+
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#define echoPin 2 // attach pin D2 Arduino to pin Echo of HC-SR04
+#define trigPin 3 //attach pin D3 Arduino to pin Trig of HC-SR04
+
+// defines variables
+long duration; // variable for the duration of sound wave travel
+int distance; // variable for the distance measurement
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+
+const int AOUTpin=A1;//the AOUT pin of the alcohol sensor goes into analog pin A0 of the arduino
+const int ledPin=13;//the anode of the LED connects to digital pin D13 of the arduino
+
+int i,alco_high,alco_low,mapped,data[200];
+
+void setup()
+{
+   //Serial.begin() pitaa olla 9600; ennen oli 115200, ei toiminut
+    Serial.begin(9600);//sets the baud rate
+
+   pinMode(trigPin, OUTPUT); // Sets the trigPin as an OUTPUT
+  pinMode(echoPin, INPUT); // Sets the echoPin as an INPUT 
+
+ pinMode(AOUTpin, INPUT);//sets the pin as an input to the arduino
+    for(i=2;i<=5;i++){
+    pinMode(i,OUTPUT);//sets the pin as an output of the arduino
+    }
+    lcd.begin();
+    lcd.backlight();
+  }
+
+int ThermistorPin = 0;
+int Vo;
+float R1 = 10000;
+float logR2, R2, T;
+float c1 = 1.009249522e-03, c2 = 2.378405444e-04, c3 = 2.019202697e-07;
+
+void loop(){
+
+  lcd.setCursor(1, 0);
+  alco_high=0; // initially alcohol level is zero
+alco_low = 1023; // low threshold is 1023
+
+   for(i=200; i>0; i--){
+   data[i] = data[i-1]; // decrement of data
+
+  if(data[i]>alco_high)
+  alco_high=data[i];
+  if(data[i]<alco_low)
+  alco_low=data[i];
+
+ // Clears the trigPin condition
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  // Sets the trigPin HIGH (ACTIVE) for 10 microseconds
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  // Reads the echoPin, returns the sound wave travel time in microseconds
+  duration = pulseIn(echoPin, HIGH);
+  // Calculating the distance
+  distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
+  }
+
+int val = analogRead(0);
+data[0]= analogRead(AOUTpin);//reads the analaog value from the alcohol sensor's AOUT pin
+//sisääntulevadata, sis.tulon minimi, sis.tulon max., uloslähdön minimi, uloslähdön max
+//val =map (val, 0, 1023, 0, 600);
+mapped=map(data[0],0,1023,-13,100);
+lcd.clear();
+lcd.print("Alco: ");
+Serial.println("Alcohol value: ");
+lcd.print(mapped);//prints the alcohol value
+lcd.setCursor(0,1);
+Serial.println(mapped);
+//delay(2000);
+
+// lisätään lämpö
+
+ Vo = analogRead(ThermistorPin);
+  R2 = R1 * (1023.0 / (float)Vo - 1.0);
+  logR2 = log(R2);
+  T = (1.0 / (c1 + c2*logR2 + c3*logR2*logR2*logR2));
+  T = T - 273.15;
+  //T = (T * 9.0)/ 5.0 + 32.0; 
+
+//yhdistys näyttöön
+  
+ //  lcd.setCursor(1, 0); TARVITAANKO
+
+  lcd.print("T: ");
+  Serial.print("Temperature: ");
+  lcd.print(T);
+  Serial.print(T);
+  lcd.print("C");
+  
+  delay(2000);
+//ultrasensori
+
+ lcd.print("Distance: ");
+  lcd.print(distance);
+  lcd.println(" cm");
+  delay(2000);
+
+    }
