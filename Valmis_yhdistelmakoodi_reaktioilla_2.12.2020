@@ -1,0 +1,147 @@
+//Toimiva lämpötilan, alkoholin, määrän ja näytön yhdistelmä reaktioilla
+
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+#define echoPin 2 // attach pin D2 Arduino to pin Echo of HC-SR04
+#define trigPin 3 //attach pin D3 Arduino to pin Trig of HC-SR04
+
+const int AOUTpin=A1;//the AOUT pin of the alcohol sensor goes into analog pin A0 of the arduino
+const int ledPin=13;//the anode of the LED connects to digital pin D13 of the arduino
+
+int i,alco_high,alco_low,mapped,data[200];
+
+void setup()
+{
+   //Serial.begin() pitaa olla 9600; ennen oli 115200, ei toiminut
+    Serial.begin(9600);//sets the baud rate
+    pinMode(AOUTpin, INPUT);//sets the pin as an input to the arduino
+    for(i=2;i<=5;i++){
+    pinMode(i,OUTPUT);//sets the pin as an output of the arduino
+    }
+    lcd.begin();
+    lcd.backlight();
+  }
+  
+ 
+String alkomittaus(){
+
+int i,alco_high,alco_low,mapped,data[200];
+
+alco_high=0; // initially alcohol level is zero
+alco_low = 1023; // low threshold is 1023
+ // lcd.setCursor(1, 0);
+  alco_high=0; // initially alcohol level is zero
+alco_low = 1023; // low threshold is 1023
+
+   for(i=200; i>0; i--){
+   data[i] = data[i-1]; // decrement of data
+    
+  if(data[i]>alco_high)
+  alco_high=data[i];
+  if(data[i]<alco_low)
+  alco_low=data[i];
+  }
+
+int val = analogRead(0);
+data[0]= analogRead(AOUTpin);//reads the analaog value from the alcohol sensor's AOUT pin
+//sisääntulevadata, sis.tulon minimi, sis.tulon max., uloslähdön minimi, uloslähdön max
+mapped=map(data[0],0,1023,-13,100);
+
+String alko;
+
+if(mapped<10){
+  alko = "mild";
+  return alko;
+}else if(mapped>10 && mapped<20){
+  alko = "K-18";
+  return alko;
+}else{
+  alko = "K-21";
+  return alko;
+}
+}
+
+String lampomittari(){
+
+int ThermistorPin = 0;
+int Vo;
+float R1 = 10000;
+float logR2, R2, T;
+float c1 = 1.009249522e-03, c2 = 2.378405444e-04, c3 = 2.019202697e-07;
+
+ Vo = analogRead(ThermistorPin);
+  R2 = R1 * (1023.0 / (float)Vo - 1.0);
+  logR2 = log(R2);
+  T = (1.0 / (c1 + c2*logR2 + c3*logR2*logR2*logR2));
+  T = T - 273.15;
+  String temperature;
+ if(T<10){
+  temperature = "Cold";
+  return temperature;
+ }else if(T>10 && T<40){
+  temperature = "Warm";
+  return temperature;
+ }else{
+  temperature = "HOT!";
+  return temperature;
+ }
+  
+
+}
+
+String ultrasensori(){
+
+// defines variables
+long duration; // variable for the duration of sound wave travel
+int distance; // variable for the distance measurement
+  pinMode(trigPin, OUTPUT); // Sets the trigPin as an OUTPUT
+    pinMode(echoPin, INPUT); // Sets the echoPin as an INPUT
+  // Clears the trigPin condition
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  // Sets the trigPin HIGH (ACTIVE) for 10 microseconds
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  // Reads the echoPin, returns the sound wave travel time in microseconds
+  duration = pulseIn(echoPin, HIGH);
+  // Calculating the distance
+  distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
+  String amount;
+  if(distance>15){
+    amount = "Empty";
+    return amount;
+  }else if(distance < 15 && distance > 8){
+    amount = "Half full";
+    return amount;
+  }else{
+    amount = "Full";
+    return amount;
+  }
+}
+
+void loop(){
+/*
+Serial.print(alkomittaus());
+Serial.print(ultrasensori());
+Serial.print(lampomittari());
+delay(1000);
+*/
+lcd.setCursor(0,0);
+lcd.print("Drink is ");
+delay(2000);
+lcd.clear();
+lcd.print(alkomittaus());
+lcd.print(" & ");
+lcd.print(lampomittari());
+//lcd.print(" C");
+lcd.setCursor(0,1);
+lcd.print("Mug is ");
+lcd.print(ultrasensori());
+delay(1500);
+lcd.clear();
+
+}
